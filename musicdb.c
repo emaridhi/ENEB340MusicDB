@@ -17,9 +17,20 @@ struct MusicDB{//for the entrire catalog of music
 };
 
 
-//1.if cant create db, return empty db or NULL,
+//1.if cant create db, return empty db or NULL. initialize values too
 MusicDB *db_create(void){
+    MusicDB db_new=malloc(sizeof(MusicDB));//for a struct above.
+    if(db_new==NULL){
+        return NULL;
+    }
 
+    db_new->list_of_artists=NULL;//since a array
+    db_new->list_of_songs=NULL;
+    db_new->numb_artists=0;
+    db_new->numb_songs=0;
+    db_new->numb_songs=0;
+    db_new->songs_size=0;
+    return db_new;
 };
 
 
@@ -46,7 +57,10 @@ int db_load(MusicDB *db, const char *dir){
 2. 0 if NULL 
 */
 size_t db_song_count(const MusicDB *db){
-
+    if(db==NULL){
+        return 0;
+    }
+    db->numb_songs;
 }
 
 
@@ -54,24 +68,88 @@ size_t db_song_count(const MusicDB *db){
 2. 0 if NULL 
 */
 size_t db_artist_count(const MusicDB *db){
-
+    if(db==NULL){
+        return 0;
+    }
+    db->numb_artists;
 }
 
 
 /*1. returns a song in index position i
-2.NULL if i out of range*/
+2.NULL if i out of range
+reutn the pointer not the actual value to the song req*/
 const Song *db_get(const MusicDB *db, size_t i){
-
+    if(i>= db->numb_songs){
+        return NULL;
+    }
+    return db->list_of_songs[i]//retirns address of the song we want
 }
 
 
 /*1. adds a song
-2. creates the artist if no artist with same name
+2. creates the artist if no artist with same name. add to the db too
 3.0 is success -1 is failure or NULL or when memory runs out
 4. song count incr and artist count incr, if new artist
+add song to the artist array
+malloc for the arrays. add NULL checks everywhewe
 */
 int db_push(MusicDB *db, const char *title, const char *artist, double rating, int year, unsigned long num_rated){
+    Song *new_song = malloc(sizeof(Song));
+    if (new_song==NULL){
+        return -1;
+    }
 
+    new_song->title =malloc(strlen(title)+1);//null op
+    if(new_song->title==NULL){
+        free(new_song);
+        return -1;
+    }
+    strcpy(new_song->title, title);//to copy the title chars into the allocated mem
+
+
+    Artist *artist_exists=NULL;
+    for(size_t i=0; i<db->numb_artists; i++){
+        if(strcmp(db->list_of_artists[i]->name, artist)==0){//each slot in list_of_artitis is an artist struct 
+            artist_exists=db->list_of_artists[i];
+            break;
+        }
+    }
+
+    int new_artist_ornot=0;
+    //if the artist does not exist, create one
+    if (artist_exists==NULL){
+        artist_exists=malloc(sizeof(Artist));
+
+        artist_exists->name=malloc(strlen(artist)+1);
+        strcpy(artist_exists->name, artist);
+
+        artist_exists->n_songs=0;
+        artist_exists->cap=0;
+        artist_exists->songs=NULL; //array
+        new_artist_ornot=1;
+    }
+
+    //add the artist to the db now
+    if(new_artist_ornot==1){
+        db->list_of_artists=realloc(db->list_of_artists, (db->numb_artists+1)*sizeof(Artist*));//extra artist memory needed
+        
+        db->list_of_artists[db->numb_artists]=artist_exists;
+        db->numb_artists++;
+    }
+
+    //finnish thte other values of the Song struct
+    new_song->rating=(float)rating;//struct song has this as float;
+    new_song->num_rated=num_rated;
+    new_song->year=year;
+    new_song->id = db->numb_songs;
+    new_song->artist =artist_exists;
+
+    //add song to the array
+    db->list_of_songs=realloc(db->list_of_songs, (db->numb_songs+1)*sizeof(Song*));
+    db->list_of_songs[db->numb_songs]=new_song;
+    db->numb_songs++;
+
+    return 0;
 }
 
 
