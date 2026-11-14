@@ -292,14 +292,89 @@ size_t db_search(const MusicDB *db, song_pred pred, const void *key, const Song 
 }
 
 
+
+
+
+
 /*1. reorders db accorign to sort card (0-3)
 2.ratings compared to decimals in the file.
 3. qsort()
 4. do nothign if unknwn card numebr
+(diff criteria, maybe use helpers)
 */
 void db_sort(MusicDB *db, int card){
-
+    if(card==0){//rating descending, then num_rated descending
+        qsort(db->songs,db->n_songs,sizeof(Song*),comp_card0);
+    } else if(card==1){//rating descending, then num_rated descending
+        qsort(db->songs,db->n_songs,sizeof(Song*),comp_card1);
+    }
+    else if(card==2){//rating descending, then num_rated descending
+        qsort(db->songs,db->n_songs,sizeof(Song*),comp_card2);
+    }
+    else if(card==3){//rating descending, then num_rated descending
+        qsort(db->songs,db->n_songs,sizeof(Song*),comp_card3);
+    }
 }
+
+//helepr for qsort. tryignto aces the values of the two songs we want to cmpare
+int comp_card0(const void *elem1, const void*elem2){//rating descending, then num_rated descending
+    const Song*song1= *(Song* cost*)elem1;
+    const Song*song2= *(Song* cost*)elem2;
+
+    if(song1->rating>song2->rating){
+        return -1;
+    } else if(song1->rating< song2->rating){
+        return 1;
+    }if(song1->num_rated>song2->num_rated){
+        return -1;
+    }
+    else if(song1->num_rated<song2->num_rated){
+        return 1;
+    } return 0;
+}
+
+int comp_card1(const void *elem1, const void*elem2){//year ascending, then title ascending (strcmp byte order)
+    const Song*song1= *(Song* cost*)elem1;
+    const Song*song2= *(Song* cost*)elem2;
+
+    if(song1->year>song2->year){
+        return -1;
+    } else if(song1->year< song2->year){
+        return 1;
+    }
+    return strcmp(song1->title, song2->title)
+}
+
+int comp_card2(const void *elem1, const void*elem2){//artist name ascending (strcmp), then year descending
+    const Song*song1= *(Song* cost*)elem1;
+    const Song*song2= *(Song* cost*)elem2;
+
+    int name_cmp = strcmp(song1->artist->name, song2->artist->name);
+
+    if(song1->year>song2->year){
+        return -1;
+    } else if(song1->year< song2->year){
+        return 1;
+    }
+    return 0;
+}
+
+int comp_card3(const void *elem1, const void*elem2){//num_rated descending, then rating descending
+    const Song*song1= *(Song* cost*)elem1;
+    const Song*song2= *(Song* cost*)elem2;
+
+    if(song1->num_rated>song2->num_rated){
+        return -1;
+    } else if(song1->num_rated< song2->num_rated){
+        return 1;
+    }else if(song1->rating< song2->rating){
+        return -1;
+    }else if(song1->rating< song2->rating){
+        return 1;
+    }
+}
+
+
 
 
 /*1. returns the #songs that whose year is [start, start+9]
@@ -307,6 +382,25 @@ void db_sort(MusicDB *db, int card){
 3. PTR ONLY. walk with the aarray of pointers. dont contatin ']' or'['. dont use integer loop index
 */
 size_t db_count_decade(const MusicDB *db, int start, const Song **best){
+    if (best!=NULL){
+        *best=NULL;
+    }
+    size_t songs_yearrange=0;
+    const song *best_song=NULL;
+    int start_year=start;
+    int end_year=start+9;
+
+    //need pointers poting to starta nd end
+    Song **start_point=db->songs;
+    Song **end_point=db->songs+ db->n_songs;
+    while(start_point<end_end){
+        Song *song=*start_point;
+
+        //complete this.
+
+    }
+
+
 
 }
 
