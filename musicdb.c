@@ -1,5 +1,6 @@
 //implement those 13 funtions here
 
+#define _POSIX_C_SOURCE 200809L 
 #include "musicdb.h"
 //#include "main.c"
 #include <string.h>
@@ -34,9 +35,22 @@ MusicDB *db_create(void){
 };
 
 
-//1.frees the db (song, title, artist, artist names, every array)
+//1.frees the db (song, title, artist, artist names, every array). use free() everywhere
 void db_destroy(MusicDB *db){
+    //loop to free arrays
+    for(size_t i=0;i<db->numb_songs;i++){
+        free(db->list_of_songs[i]->title);
+        free(db->list_of_songs[i]);
+    }
+    free(db->list_of_songs);
 
+    for(size_t i=0;i<db->numb_artists;i++){
+        free(db->list_of_artists[i]->name);
+        free(db->list_of_artists[i]->songs);
+        free(db->list_of_artists[i]);
+    }
+    free(db->list_of_artists);
+    free(db);
 }
 
 
@@ -48,8 +62,69 @@ void db_destroy(MusicDB *db){
     a rating that isnt a number from 0.0 to 5.0, a number of raters  that isnt a non-negative integer.
 5. (last line has no \n)
 */
-int db_load(MusicDB *db, const char *dir){
+int db_load(MusicDB *db, const char *dir){ 
+    if(db==NULL||dir==NULL){
+        return -1;
+    }
+    char path[512]; 
 
+    snprintf(path, sizeof(path), "%s/artists.txt", dir);//creatign the file path strign builder.
+    FILE *artists_file= fopen(path,"r");
+
+    snprintf(path, sizeof(path),"%s/people_rated.txt", dir);
+    FILE *people_rated_file= fopen(path,"r");
+
+    snprintf(path, sizeof(path),"%s/ratings.txt", dir);
+    FILE *ratings_file= fopen(path,"r");
+
+    snprintf(path, sizeof(path),"%s/songs.txt", dir);//remove whitsepaces later
+    FILE *songs_file= fopen(path,"r");
+
+    snprintf(path, sizeof(path),"%s/year.txt", dir);
+    FILE *year_file= fopen(path,"r");
+
+    //failures
+    if(artists_file==NULL||people_rated_file==NULL||ratings_file==NULL||songs_file==NULL||year_file==NULL){
+        printf("error");
+        return -1;}
+
+    //remove whistepecs. hold values for eaech line correspondingly in each of the 5 txt, remove the spaces, and then stor in db with the push fn.
+    char *title_line=NULL;
+    char *artist_line=NULL;
+    char *year_line=NULL;
+    char *rating_line=NULL;
+    char *people_rated_line=NULL;
+    size_t title_mem=0;
+    size_t artist_mem=0;
+    size_t year_mem=0;
+    size_t rating_mem=0;
+    size_t people_rated_mem=0;
+
+    int eof_or_not=1;
+    while(eof_or_not){
+    //no fgets. alternative
+        ssize_t title_length =getline(&title_line,&title_mem,songs_file);
+        ssize_t artist_length =getline(&artist_line,&artist_mem,songs_file);
+        ssize_t year_length =getline(&year_line,&year_mem,songs_file);
+        ssize_t rating_length =getline(&rating_line,&rating_mem,songs_file);
+        ssize_t people_rated_length =getline(&people_rated_line,&people_rated_mem,songs_file);
+
+        if (title_length==-1&&artist_length==-1&&year_length==-1&&rating_length==-1&&people_rated_length==-1){//if same number of line
+            break;
+        } else if(title_length==-1||artist_length==-1 ||year_length==-1 ||rating_length==-1||people_rated_length==-1){
+            return -1;
+        }
+    }
+    while(isspace((unsigned char)*title_line)){
+        title_line++;
+    }
+    while(isspace((unsigned char)*artist_line)){
+        artist_line++;
+    }
+
+    if(title_line[0]=='\0'||artist_line[0]='\0'){
+        return -1;
+    }
 }
 
 
@@ -60,7 +135,7 @@ size_t db_song_count(const MusicDB *db){
     if(db==NULL){
         return 0;
     }
-    db->numb_songs;
+    return db->numb_songs;
 }
 
 
@@ -71,7 +146,7 @@ size_t db_artist_count(const MusicDB *db){
     if(db==NULL){
         return 0;
     }
-    db->numb_artists;
+    return db->numb_artists;
 }
 
 
@@ -157,10 +232,23 @@ int db_push(MusicDB *db, const char *title, const char *artist, double rating, i
 "%-35s %-25s %-5s %-8s %s\n" with the texts Song Title, Artist, Year, Rating, People Rated
 2. prints the first lim (limit) songs.
 "%-35.35s %-25.25s %-5d %-8.2f %lu\n" (title, artist name, year, rating, number of raters).
-3. if lim==0 or lim>count
+3. if lim==0 or lim>count means all
+use datastream
 */
 void db_disp(const MusicDB *db, FILE *out, size_t lim){
+    if(db==NULL){
+        return;
+    }
+    fprintf(out,"%-35s %-25s %-5s %-8s %s\n", "Song Title","Artist", "Year", "Rating", "People Rated");
 
+    if(lim==0||lim>db->numb_songs){
+        lim=db->numb_songs
+    }
+
+    for(size_t i=0;i<lim;i++){
+        const Song *s=db->list_of_songs[i];
+        fprintf(out,"%-35.35s %-25.25s %-5d %-8.2f %lu\n",s->title, s->artist->name, (int)s->year, (double)s->rating, (unsigned long)->num_rated);
+    }
 }
 
 
@@ -172,7 +260,35 @@ void db_disp(const MusicDB *db, FILE *out, size_t lim){
 (song obj not copied, so we hav epointers to the original songs)
 */
 size_t db_search(const MusicDB *db, song_pred pred, const void *key, const Song ***out){
+    if(out==NULL){
+        return 0;}
+    *out=NULL;
 
+    size_t matches_count=0;
+    for(size_t i=0;i<db->n_songs;i++){
+        if(pred(db->songs[i], key)){
+            matches_count++;
+        }
+    }
+    if(matches_count==0){
+        return 0;
+    } 
+    
+    const Song **match_songs =malloc(count*sizeof(Song*));
+    if(matches_songs==NULL){
+        return 0;
+    }
+
+    //fill the array now
+    size_t l=0;
+    for(size_t m=0; m<db->n_songs;m++){
+        if(pred(db->songs[m],key)){
+            match_songs[l]= db->songs[m];
+            m++;
+        }
+    }
+    *out=match_songs;
+    return matches_count;        
 }
 
 
