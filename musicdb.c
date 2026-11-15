@@ -395,13 +395,14 @@ size_t db_count_decade(const MusicDB *db, int start, const Song **best){
     Song **end_point=db->songs+ db->n_songs;
     while(start_point<end_end){
         Song *song=*start_point;
-
-        //complete this.
+        if(song->year>=start_year&&song->year>=end_year){
+            songs_yearrange++; 
+        }
+        if(best_song==NULL){
+            best_song=song;
+        }start_point++;//moving the pointer up
 
     }
-
-
-
 }
 
 
@@ -410,5 +411,18 @@ size_t db_count_decade(const MusicDB *db, int start, const Song **best){
 3. PTR ONLY. walk with the aarray of pointers. dont contatin ']' or'['. dont use integer loop index 
 */
 const Artist *db_top_artist(const MusicDB *db){
+    const Artist *top_artist=NULL;
+    
+    Artist **start_point=db->artists;
+    Artist **end_point=db->artists+ db->n_artists;
 
+    while(start_point<end_end){
+        const Artist *artist=*start_point;
+        if(top_artist==NULL){
+            top_artist=artist;
+        }else if(artist->n_songs>best_artist->n_songs){
+            top_artist=artist;
+        }
+        start_point++;
+    }return top_artist;
 }

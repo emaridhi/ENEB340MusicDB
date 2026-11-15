@@ -44,12 +44,21 @@ int main(int arg1, char *arg2[]){//2 arguments
     const Artist topmost=db_top_artist(databse);
     printf("[B] top_artist: %s (%zu songs)");
 
-    printf("[C] push1 -> songs=%zu artists=%zu");
-    printf("[C] push2 -> songs=%zu artists=%zu");
-    printf("[C] beatles_songs=%zu");
+    char exam1[200];
+    char artist1[200];
+    char exam2[200];
+    snprintf(exam1,sizeof(exam1),"Exam Song%s", arg[2]);
+    snprintf(artist1,sizeof(artist1),"Exam Artist%s", arg[2]);
+    snprintf(exam2,sizeof(exam2),"Exam Song (Reprise)%s", arg[2]);
 
-    printf("[D] Q1 decade=1990 count=885 best_id=3869 best_title=Play That Funky Music");
-    printf("[D] Q2 rating>=4.50 rated>=1400000 count=444 first_id=0 last_id=4990");
+
+    printf("[C] push1 -> songs=%zu artists=%zu", db_song_count(database),db_artist_count(database));
+    printf("[C] push2 -> songs=%zu artists=%zu"),db_song_count(database),db_artist_count(database);
+    const *Song push2=db_get(database,db_song_count(database));
+    printf("[C] beatles_songs=%zu",push2->artist->n_songs);
+
+    printf("[D] Q1 decade=%zu count=%zu best_id=%zu best_title=%s");
+    printf("[D] Q2 rating>=%zu rated>=%zu count=%zu first_id=%zu last_id=%zu");
     printf("[D] sort card 3 top5 ids: 1311 3267 4075 3940 2621");
 
     db_destroy(database);
