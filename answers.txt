@@ -1,0 +1,40 @@
+1.	Addresses. Print (void *)db_get(db, 0), (void *)db_get(db, 1) and the two title pointers using %p. 
+Paste the four values from one run. Compute the difference in bytes between the two Song addresses. 
+Is it equal to sizeof(Song)? Explain what you observe in at most three sentences.
+ANSWER:
+db_get(db,1) and db_get(db,0) both return pointers to two Stuructures of songs. The two title pointers point to the two titles of the song.
+The two pointers are seperately allocated in memory and so are the titles. My compilation did produce errors and I was not able to observe the the difffrenece in bytes
+between the two Song adresses bu tI do no expect them to equal to sizeof(Song) since i used malloc(sizeof(Song)) to set them in memory.
+
+
+2.	Layout. Give a byte map of your Song (offset, size and padding of every member). 
+Then give a member order, using the same members and types, that produces the smallest sizeof, and state the new sizeof that your compiler reports.
+ANSWER:
+we are on a 64-bit linux system so pointers are 8 bytes. we know int is 4 bytes, short is 2 bytes and float is 4 bytes.
+for L=1,
+year - offset 0, size 2, padding 0
+title - offset 8, size 8, padding 6
+id - offset 16, size 4, padding 0
+artist - offset 24, size 8, padding 4
+rating - offset 32, size 4, padding 0
+num_rated - offset 36, size 4, padding 0
+
+member order with the smallest sizeof. placing the biggesst first: title, artist, id, rating, num_rated, year. this is because the elemnts can only be placed at multiples
+of their size in the memory(in terms of bytes).
+
+3.	Comparator. Write the single expression inside one of your qsort comparators that turns the const void * argument into a const Song *. 
+Say what each * in it means, and what goes wrong if you cast the argument directly to const Song *.
+ANSWER:
+*(Song* const*)elem1;
+the first * derefences the value. it is used to get the value of a pointer. The second and third * are usesd to decalere the pointers.
+if you cast the argument directly to const Song *, would see the pointer as a Song and not the address of a Song Struct.
+
+
+4.	Your bugs. Describe two pointer or memory bugs that you really met while doing this exam: the symptom, how you found it, any tool output, and the fix. 
+If you met none, describe two that you found by reading your own code.
+ANSWER:
+I fixed a bunch of compliation errors simply by running "gcc -Wall -Wextra -std=c11 main.c musicdb.c -o musicdb_report". There were mostly typos and in the main.c,
+an undeclared "tail_padding" variable.
+I also accidently declared unisgned ints as %zu instead of %lu which i corrected in most places.
+db_create() was unable to compile since it was noted as invalud initializer wheb i did malloc initially.This could have been since malloc usually returns a pointer
+and that lin eof code was a Musicdb instance. I could just have declared it as a pointer instead.like musicdb*db_new instead of db_new.

@@ -122,7 +122,7 @@ int db_load(MusicDB *db, const char *dir){
         artist_line++;
     }
 
-    if(title_line[0]=='\0'||artist_line[0]='\0'){
+    if(title_line[0]=='\0'||artist_line[0]=='\0'){
         return -1;
     }
 }
@@ -157,7 +157,7 @@ const Song *db_get(const MusicDB *db, size_t i){
     if(i>= db->numb_songs){
         return NULL;
     }
-    return db->list_of_songs[i]//retirns address of the song we want
+    return db->list_of_songs[i];//retirns address of the song we want
 }
 
 
@@ -242,7 +242,7 @@ void db_disp(const MusicDB *db, FILE *out, size_t lim){
     fprintf(out,"%-35s %-25s %-5s %-8s %s\n", "Song Title","Artist", "Year", "Rating", "People Rated");
 
     if(lim==0||lim>db->numb_songs){
-        lim=db->numb_songs
+        lim=db->numb_songs;
     }
 
     for(size_t i=0;i<lim;i++){
@@ -265,7 +265,7 @@ size_t db_search(const MusicDB *db, song_pred pred, const void *key, const Song 
     *out=NULL;
 
     size_t matches_count=0;
-    for(size_t i=0;i<db->n_songs;i++){
+    for(size_t i=0;i<db->numb_songs;i++){
         if(pred(db->songs[i], key)){
             matches_count++;
         }
@@ -275,13 +275,13 @@ size_t db_search(const MusicDB *db, song_pred pred, const void *key, const Song 
     } 
     
     const Song **match_songs =malloc(count*sizeof(Song*));
-    if(matches_songs==NULL){
+    if(match_songs==NULL){
         return 0;
     }
 
     //fill the array now
     size_t l=0;
-    for(size_t m=0; m<db->n_songs;m++){
+    for(size_t m=0; m<db->numb_songs;m++){
         if(pred(db->songs[m],key)){
             match_songs[l]= db->songs[m];
             m++;
@@ -318,8 +318,8 @@ void db_sort(MusicDB *db, int card){
 
 //helepr for qsort. tryignto aces the values of the two songs we want to cmpare
 int comp_card0(const void *elem1, const void*elem2){//rating descending, then num_rated descending
-    const Song*song1= *(Song* cost*)elem1;
-    const Song*song2= *(Song* cost*)elem2;
+    const Song*song1= *(Song* const*)elem1;
+    const Song*song2= *(Song* const*)elem2;
 
     if(song1->rating>song2->rating){
         return -1;
@@ -392,8 +392,8 @@ size_t db_count_decade(const MusicDB *db, int start, const Song **best){
 
     //need pointers poting to starta nd end
     Song **start_point=db->songs;
-    Song **end_point=db->songs+ db->n_songs;
-    while(start_point<end_end){
+    Song **end_point=db->songs+ db->numb_songs;
+    while(start_point<end_point){
         Song *song=*start_point;
         if(song->year>=start_year&&song->year>=end_year){
             songs_yearrange++; 
@@ -414,13 +414,13 @@ const Artist *db_top_artist(const MusicDB *db){
     const Artist *top_artist=NULL;
     
     Artist **start_point=db->artists;
-    Artist **end_point=db->artists+ db->n_artists;
+    Artist **end_point=db->artists+ db->numb_artists;
 
     while(start_point<end_end){
         const Artist *artist=*start_point;
         if(top_artist==NULL){
             top_artist=artist;
-        }else if(artist->n_songs>best_artist->n_songs){
+        }else if(artist->n_songs>top_artist->n_songs){
             top_artist=artist;
         }
         start_point++;
