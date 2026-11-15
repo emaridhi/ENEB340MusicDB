@@ -32,10 +32,9 @@ int main(int arg1, char *arg2[]){//2 arguments
         db_destroy(database);
         return 1;
     }
-
     printf("ENEB340 REPORT\n");
     printf("card: L=%d D=%d T=%d S=%d\n", L,D,T,S);
-    printf("[A] sizeof(Song)=%zu tail_padding=%zu\n", sizeof(Song), tail_padding);
+    printf("[A] sizeof(Song)=%zu tail_padding=%zu\n", sizeof(Song), sizeof(Song)-(sizeof(sizeof(s->id),offsetof(Song,id)));
     printf("[A] offsets title=%zu artist=%zu year=%zu rating=%zu num_rated=%zu id=%zu\n",offsetof(Song, title),offsetof(Song, artist),offsetof(Song, year),offsetof(Song,rating),offsetof(Song, num_rating),offsetof(Song,id));
 
     printf("[B] songs=%zu artists=%zu", db_song_count(database), db_artist_count(database));
